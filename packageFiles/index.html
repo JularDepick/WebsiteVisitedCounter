@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>visited数据</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 min-h-screen p-8">
+    <div class="max-w-md mx-auto bg-white p-6 rounded-lg shadow-md">
+        <h1 class="text-2xl font-bold mb-6 text-center text-gray-800">visited数据</h1>
+        
+        <div class="mb-8">
+            <h2 class="text-lg font-semibold mb-2 text-gray-700">当前访问次数:</h2>
+            <div id="currentCount" class="text-3xl font-mono bg-gray-100 p-3 rounded text-center">
+                加载中...
+            </div>
+        </div>
+        
+        <div class="flex gap-4">
+            <button id="updateBtn" class="flex-1 bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded transition duration-300">
+                <i class="fa fa-plus-circle mr-2"></i>更新计数
+            </button>
+            <button id="refreshBtn" class="flex-1 bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded transition duration-300">
+                <i class="fa fa-refresh mr-2"></i>刷新计数
+            </button>
+        </div>
+        
+        <div id="message" class="mt-4 text-center text-sm"></div>
+    </div>
+
+    <script src="visited_op.js"></script>
+    <script>
+        // 显示计数并格式化
+        function displayCount(count, elementId) {
+            const element = document.getElementById(elementId);
+            element.textContent = count;
+        }
+        
+        // 显示消息
+        function showMessage(text, isError = false) {
+            const messageEl = document.getElementById('message');
+            messageEl.textContent = text;
+            messageEl.className = `mt-4 text-center text-sm ${isError ? 'text-red-500' : 'text-green-500'}`;
+            
+            // 3秒后清除消息
+            setTimeout(() => {
+                messageEl.textContent = '';
+                messageEl.className = 'mt-4 text-center text-sm';
+            }, 3000);
+        }
+        
+        // 页面加载时获取当前计数
+        // 页面加载时获取当前计数
+async function loadInitialCount() {
+    try {
+        const count = await visited_read();  // 修正函数名
+        displayCount(count, 'currentCount');
+    } catch (error) {
+        document.getElementById('currentCount').textContent = '获取失败';
+        showMessage('无法获取计数: ' + error.message, true);
+    }
+}
+
+// 绑定按钮事件
+document.addEventListener('DOMContentLoaded', () => {
+    loadInitialCount();
+    
+    // 更新计数按钮
+    document.getElementById('updateBtn').addEventListener('click', async () => {
+        try {
+            const newCount = await visited_increase();  // 修正函数名
+            displayCount(newCount, 'currentCount');
+            showMessage('计数已更新');
+        } catch (error) {
+            showMessage('更新失败: ' + error.message, true);
+        }
+    });
+    
+    // 刷新计数按钮
+    document.getElementById('refreshBtn').addEventListener('click', async () => {
+        try {
+            const count = await visited_read();  // 修正函数名
+            displayCount(count, 'currentCount');
+            showMessage('计数已刷新');
+        } catch (error) {
+            showMessage('刷新失败: ' + error.message, true);
+        }
+    });
+});
+    </script>
+</body>
+</html>
